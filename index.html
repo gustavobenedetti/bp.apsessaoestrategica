@@ -68,7 +68,7 @@ body::before {
 .nav-logo {
   display: flex; align-items: center;
 }
-.nav-logo img { height: 24px; width: auto; display: block; }
+.nav-logo img { height: 32px; width: auto; display: block; }
 
 .nav-right { display: flex; align-items: center; gap: 8px; }
 .nav-steps { display: flex; gap: 4px; margin-right: 8px; }
@@ -1491,8 +1491,8 @@ function computeResult() {
     // Ocupa no máximo 80% do espaço disponível — deixa a apresentação
     // com margem visual confortável em qualquer resolução de tela
     var scale = Math.min(
-      (stage.clientWidth  * 0.92) / STAGE_W,
-      (stage.clientHeight * 0.92) / STAGE_H
+      (stage.clientWidth  * 0.936) / STAGE_W,
+      (stage.clientHeight * 0.936) / STAGE_H
     );
     frame.style.transform = 'scale(' + scale + ')';
   }
