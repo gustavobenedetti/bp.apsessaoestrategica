@@ -547,8 +547,8 @@ body::before {
   align-items: center;
   gap: 0;
   overflow: hidden;
-  height: 83px;
-  flex-shrink: 0;
+  flex: 1 1 0;
+  min-height: 0;
 }
 .s2-stat-val {
   font-size: 32px; font-weight: 900; letter-spacing: -0.02em; line-height: 1;
@@ -1423,7 +1423,12 @@ function computeResult() {
     var stage = document.querySelector('.stage');
     var frame = document.getElementById('stageFrame');
     if (!stage || !frame) return;
-    var scale = Math.min(stage.clientWidth / STAGE_W, stage.clientHeight / STAGE_H);
+    // Ocupa no máximo 80% do espaço disponível — deixa a apresentação
+    // com margem visual confortável em qualquer resolução de tela
+    var scale = Math.min(
+      (stage.clientWidth  * 0.80) / STAGE_W,
+      (stage.clientHeight * 0.80) / STAGE_H
+    );
     frame.style.transform = 'scale(' + scale + ')';
   }
   window.addEventListener('resize', fitStage);
