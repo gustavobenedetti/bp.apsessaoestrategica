@@ -5,14 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Branches Performance · Sessão Estratégica R1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body { height: 100%; }
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #070c1a;
   color: #f0f4ff;
   -webkit-font-smoothing: antialiased;
@@ -135,25 +136,20 @@ body::before {
 #slide-1 .blob-1 { width:560px;height:560px;background:radial-gradient(circle,rgba(30,77,155,0.32),transparent 65%);top:-80px;left:-100px;animation:floatblob 9s ease-in-out infinite alternate; }
 #slide-1 .blob-2 { width:380px;height:380px;background:radial-gradient(circle,rgba(34,197,94,0.10),transparent 65%);bottom:40px;right:40px;animation:floatblob 12s ease-in-out infinite alternate-reverse; }
 #slide-2 .blob-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(34,197,94,0.08),transparent 65%);top:20%;right:-60px;animation:floatblob 11s ease-in-out infinite alternate; }
-#slide-3 .blob-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(239,68,68,0.09),transparent 65%);top:30%;left:50%;transform:translateX(-50%);animation:floatblob 10s ease-in-out infinite alternate; }
-#slide-4 .blob-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(96,165,250,0.07),transparent 65%);bottom:0;left:50%;transform:translateX(-50%);animation:floatblob 10s ease-in-out infinite alternate-reverse; }
+#slide-3 .blob-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(239,68,68,0.09),transparent 65%);top:30%;left:50%;transform:translateX(-50%);animation:floatblob-center 10s ease-in-out infinite alternate; }
+#slide-4 .blob-1 { width:500px;height:500px;background:radial-gradient(circle,rgba(96,165,250,0.07),transparent 65%);bottom:0;left:50%;transform:translateX(-50%);animation:floatblob-center 10s ease-in-out infinite alternate-reverse; }
 #slide-5 .blob-1 { width:480px;height:480px;background:radial-gradient(circle,rgba(34,197,94,0.09),transparent 65%);top:30%;right:0;animation:floatblob 9s ease-in-out infinite alternate; }
 @keyframes floatblob {
   from { transform: translate(0,0); }
   to   { transform: translate(28px,18px); }
 }
+@keyframes floatblob-center {
+  from { transform: translateX(-50%) translate(0,0); }
+  to   { transform: translateX(-50%) translate(28px,18px); }
+}
 
 /* ── COMMON ELEMENTS ── */
-.slide-label {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.22em;
-  text-transform: uppercase; color: var(--gray-3);
-  margin-bottom: 14px;
-  display: flex; align-items: center; gap: 14px;
-}
-.slide-label::before, .slide-label::after {
-  content: ''; flex: 0 0 40px; height: 1px;
-  background: var(--border-soft);
-}
+
 .slide-title {
   font-size: clamp(26px, 3.2vw, 46px);
   font-weight: 800; letter-spacing: -0.03em; line-height: 1.1;
@@ -227,84 +223,234 @@ body::before {
 
 /* ── SLIDE 3 — DIAGNÓSTICO ── */
 #slide-3 { padding: 28px 60px 18px; overflow: hidden; justify-content: flex-start; }
-.diag-frame {
+/* ── SLIDE 4 — DIAGNÓSTICO NATIVO ── */
+.diag-wrap {
   position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  border: none; display: block;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px 20px 16px;
+  overflow-y: auto;
+}
+.diag-topbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 12px 20px 0;
+  display: flex; flex-direction: column; gap: 6px;
+  z-index: 2;
+}
+.diag-brand {
+  font-size: 9px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--gray-3); text-align: center;
+}
+.diag-progress-track {
+  height: 2px; background: rgba(46,109,212,0.15); border-radius: 2px; overflow: hidden;
+}
+.diag-progress-fill {
+  height: 100%; width: 0%; background: var(--accent);
+  transition: width .5s cubic-bezier(.16,1,.3,1);
+}
+.diag-screen {
+  width: 100%; max-width: 480px;
+  opacity: 0; transform: translateY(12px);
+  transition: opacity .4s ease, transform .4s ease;
+  display: none; margin-top: 40px;
+}
+.diag-screen.active { opacity: 1; transform: translateY(0); display: block; }
+.diag-eyebrow {
+  font-size: 9px; font-weight: 700; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 12px; text-align: center;
+}
+.diag-title {
+  font-size: clamp(22px, 4vw, 30px); font-weight: 900;
+  letter-spacing: -.03em; line-height: 1.1;
+  color: var(--white); text-align: center; margin-bottom: 12px;
+}
+.diag-desc {
+  font-size: 13px; color: var(--gray-2); line-height: 1.6;
+  text-align: center; margin-bottom: 24px;
+}
+.diag-field-label {
+  font-size: 10px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--gray-3); margin-bottom: 7px; display: block;
+}
+.diag-input {
+  width: 100%; background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 13px 15px; font-size: 14px; color: var(--white);
+  font-family: 'Inter', sans-serif; margin-bottom: 16px;
+  outline: none; transition: border-color .2s;
+}
+.diag-input:focus { border-color: var(--accent); }
+.diag-input::placeholder { color: var(--gray-3); }
+.diag-btn {
+  width: 100%; background: var(--accent); color: var(--navy);
+  border: none; border-radius: 10px; padding: 14px;
+  font-size: 14px; font-weight: 800; letter-spacing: .03em;
+  cursor: pointer; transition: all .2s; font-family: 'Inter', sans-serif;
+}
+.diag-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.diag-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; filter: none; }
+.diag-btn-wa {
+  width: 100%; background: var(--green-cta); color: #fff;
+  border: none; border-radius: 10px; padding: 14px;
+  font-size: 14px; font-weight: 800; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: 'Inter', sans-serif; transition: all .2s;
+  text-decoration: none; margin-bottom: 10px;
+}
+.diag-btn-wa:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.diag-q-counter {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--gray-3); text-align: center; margin-bottom: 8px; letter-spacing: .08em;
+}
+.diag-q-axis {
+  font-size: 9px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--accent);
+  text-align: center; margin-bottom: 12px;
+}
+.diag-q-text {
+  font-size: clamp(15px, 3vw, 19px); font-weight: 800;
+  color: var(--white); line-height: 1.35; text-align: center; margin-bottom: 20px;
+}
+.diag-options { display: flex; flex-direction: column; gap: 8px; }
+.diag-option {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; cursor: pointer;
+  transition: all .2s; font-size: 12.5px; color: var(--gray-2);
+  display: flex; align-items: center; gap: 10px; line-height: 1.45;
+}
+.diag-option:hover { border-color: rgba(96,165,250,0.4); background: rgba(96,165,250,0.05); color: var(--white); }
+.diag-option.selected { border-color: var(--accent); background: rgba(96,165,250,0.08); color: var(--white); }
+.diag-opt-letter {
+  width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 9px; color: var(--gray-3); font-weight: 700;
+}
+.diag-option.selected .diag-opt-letter { border-color: var(--accent); color: var(--accent); background: rgba(96,165,250,0.12); }
+.diag-back {
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  color: var(--gray-3); font-size: 11px; cursor: pointer;
+  margin-top: 16px; transition: color .2s;
+}
+.diag-back:hover { color: var(--gray-2); }
+.diag-calc-wrap { display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
+.diag-spinner {
+  width: 38px; height: 38px; border: 2px solid rgba(46,109,212,0.2);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .8s linear infinite; margin-bottom: 18px;
+}
+.diag-calc-text { font-size: 12px; color: var(--gray-3); letter-spacing: .04em; }
+.diag-res-track { display: flex; gap: 5px; justify-content: center; margin-bottom: 18px; }
+.diag-res-seg { flex: 1; max-width: 55px; height: 3px; border-radius: 2px; background: rgba(46,109,212,0.2); }
+.diag-res-seg.filled { background: var(--accent); }
+.diag-res-card {
+  background: var(--navy-card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px; margin-bottom: 16px;
+  position: relative; overflow: hidden;
+}
+.diag-res-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--res-clr, var(--accent)); }
+.diag-res-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 9px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 20px;
+  margin-bottom: 10px; border: 1px solid var(--res-clr, var(--accent));
+  color: var(--res-clr, var(--accent));
+}
+.diag-res-text { font-size: 12.5px; color: var(--gray-2); line-height: 1.65; }
+.diag-res-text strong { color: var(--white); }
+.diag-res-note { font-size: 10px; color: var(--gray-3); text-align: center; line-height: 1.6; }
+.diag-footer {
+  position: absolute; bottom: 8px; left: 0; right: 0;
+  text-align: center; font-size: 8px; color: var(--gray-3);
+  letter-spacing: .1em; text-transform: uppercase;
 }
 
 /* ── SLIDE 4 — PILARES ── */
-.pilares-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 0; }
-.pilar-card {
+/* ── SLIDE 3 — ENGRENAGENS (layout horizontal) ── */
+.eng-grid {
+  display: flex; flex-direction: column; gap: 10px;
+  flex: 1 1 0; min-height: 0;
+}
+.eng-row {
+  display: grid;
+  grid-template-columns: 220px 1fr auto;
+  align-items: center;
+  gap: 0;
   background: rgba(19,29,53,0.97);
   border: 1px solid var(--border-soft);
-  border-radius: 14px; padding: 16px 18px;
-  display: flex; flex-direction: column; gap: 8px;
-  position: relative; overflow: hidden;
-  transition: transform .3s, border-color .3s;
-}
-.pilar-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-}
-.pilar-card::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(160deg, rgba(96,165,250,0.07) 0%, transparent 60%);
-  opacity: 0; transition: opacity .3s;
-}
-.pilar-card:hover { transform: translateY(-4px); }
-.pilar-card:hover::after { opacity: 1; }
-
-.pilar-card.p1::before { background: var(--accent); }
-.pilar-card.p1:hover   { border-color: rgba(96,165,250,0.4); }
-.pilar-card.p2::before { background: var(--green); }
-.pilar-card.p2:hover   { border-color: rgba(34,197,94,0.4); }
-.pilar-card.p3::before { background: var(--yellow); }
-.pilar-card.p3:hover   { border-color: rgba(234,179,8,0.4); }
-
-.pilar-icon-wrap {
-  width: 50px; height: 50px;
-  background: rgba(30,77,155,0.25);
-  border: 1px solid var(--border);
   border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  position: relative; z-index: 2;
-  transition: background .3s, border-color .3s;
+  overflow: hidden;
+  position: relative;
+  transition: border-color .3s;
+  flex: 1 1 0; min-height: 0;
 }
-.pilar-card.p1:hover .pilar-icon-wrap { background:rgba(96,165,250,0.15); border-color:rgba(96,165,250,0.4); }
-.pilar-card.p2:hover .pilar-icon-wrap { background:rgba(34,197,94,0.15);  border-color:rgba(34,197,94,0.4); }
-.pilar-card.p3:hover .pilar-icon-wrap { background:rgba(234,179,8,0.15);  border-color:rgba(234,179,8,0.4); }
+.eng-row::before {
+  content: ''; position: absolute; top: 0; left: 0; bottom: 0; width: 3px;
+}
+.eng-row.e1::before { background: var(--accent); }
+.eng-row.e2::before { background: var(--green); }
+.eng-row.e3::before { background: var(--yellow); }
+.eng-row.e1:hover { border-color: rgba(96,165,250,0.35); }
+.eng-row.e2:hover { border-color: rgba(34,197,94,0.35); }
+.eng-row.e3:hover { border-color: rgba(234,179,8,0.35); }
 
-.pilar-num {
+/* Coluna esquerda: ícone + nome */
+.eng-id {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px 18px 28px;
+  border-right: 1px solid var(--border-soft);
+}
+.eng-icon-wrap {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.eng-row.e1 .eng-icon-wrap { background: rgba(96,165,250,0.1); border: 1px solid rgba(96,165,250,0.25); }
+.eng-row.e2 .eng-icon-wrap { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.25); }
+.eng-row.e3 .eng-icon-wrap { background: rgba(234,179,8,0.1);  border: 1px solid rgba(234,179,8,0.25); }
+.eng-num {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; font-weight: 600; letter-spacing: 0.12em;
-  margin-bottom: 3px; position: relative; z-index: 2;
+  font-size: 9px; font-weight: 700; letter-spacing: .12em; margin-bottom: 3px;
 }
-.pilar-card.p1 .pilar-num { color: var(--accent); }
-.pilar-card.p2 .pilar-num { color: var(--green); }
-.pilar-card.p3 .pilar-num { color: var(--yellow); }
-.pilar-title {
-  font-size: 16px; font-weight: 800; letter-spacing: -0.02em;
-  color: var(--white); margin-bottom: 4px; position: relative; z-index: 2;
+.eng-row.e1 .eng-num { color: var(--accent); }
+.eng-row.e2 .eng-num { color: var(--green); }
+.eng-row.e3 .eng-num { color: var(--yellow); }
+.eng-name { font-size: 15px; font-weight: 800; color: var(--white); letter-spacing: -.01em; }
+
+/* Coluna central: responsabilidade */
+.eng-resp {
+  padding: 18px 28px;
+  border-right: 1px solid var(--border-soft);
 }
-.pilar-desc {
-  font-size: 13px; color: var(--gray-2); font-weight: 400;
-  line-height: 1.65; position: relative; z-index: 2;
+.eng-resp-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--gray-3); margin-bottom: 6px;
 }
-.pilar-items { display: flex; flex-direction: column; gap: 5px; position: relative; z-index: 2; }
-.pilar-item {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: var(--gray-2);
+.eng-resp-title {
+  font-size: 15px; font-weight: 700; color: var(--white);
+  margin-bottom: 4px; letter-spacing: -.01em;
 }
-.pilar-item::before {
-  content: '→'; font-family: 'JetBrains Mono', monospace;
-  font-size: 10px; flex-shrink: 0;
+.eng-resp-desc {
+  font-size: 12px; color: var(--gray-2); line-height: 1.55;
 }
-.pilar-card.p1 .pilar-item::before { color: var(--accent); }
-.pilar-card.p2 .pilar-item::before { color: var(--green); }
-.pilar-card.p3 .pilar-item::before { color: var(--yellow); }
+
+/* Coluna direita: tags do que resolve */
+.eng-resolves {
+  padding: 18px 24px;
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 200px;
+}
+.eng-resolves-label {
+  font-size: 9px; font-weight: 700; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--gray-3); margin-bottom: 2px;
+}
+.eng-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; color: var(--gray-2);
+}
+.eng-tag::before { content: '→'; font-family: 'JetBrains Mono', monospace; font-size: 9px; }
+.eng-row.e1 .eng-tag::before { color: var(--accent); }
+.eng-row.e2 .eng-tag::before { color: var(--green); }
+.eng-row.e3 .eng-tag::before { color: var(--yellow); }
 
 /* ── SLIDE 6 — PRÓXIMOS PASSOS ── */
 .proximos-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
@@ -407,20 +553,22 @@ body::before {
   position: fixed; inset: 0; z-index: 500;
   background: var(--navy);
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 40px 24px;
+  align-items: center; justify-content: flex-start;
+  padding: 24px 24px;
+  overflow-y: auto;
 }
 #planning-screen.hidden { display: none; }
 
-.plan-logo { margin-bottom: 40px; }
+.plan-logo { margin-bottom: 24px; margin-top: 16px; flex-shrink: 0; }
 .plan-logo img { height: 26px; width: auto; }
 
 .plan-card {
   background: rgba(19,29,53,0.97);
   border: 1px solid var(--border);
-  border-radius: 20px; padding: 40px 44px;
+  border-radius: 20px; padding: 32px 36px 36px;
   width: 100%; max-width: 480px;
-  position: relative; overflow: hidden;
+  position: relative; overflow: visible;
+  flex-shrink: 0; margin-bottom: 24px;
 }
 .plan-card::before {
   content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
@@ -436,9 +584,9 @@ body::before {
   color: var(--white); margin-bottom: 6px;
 }
 .plan-sub {
-  font-size: 13px; color: var(--gray-3); margin-bottom: 32px; line-height: 1.5;
+  font-size: 13px; color: var(--gray-3); margin-bottom: 20px; line-height: 1.5;
 }
-.plan-fields { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
+.plan-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
 .plan-field { display: flex; flex-direction: column; gap: 6px; }
 .plan-label {
   font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
@@ -475,6 +623,41 @@ body::before {
 }
 .plan-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 
+/* Toggles de slides */
+.plan-slides-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--gray-3);
+  margin-bottom: 12px; display: block;
+}
+.plan-slides { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.plan-slide-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(7,12,26,0.6); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 14px; cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.plan-slide-toggle:hover { border-color: rgba(96,165,250,0.3); }
+.plan-slide-toggle.active { border-color: rgba(96,165,250,0.35); background: rgba(96,165,250,0.05); }
+.plan-slide-info { display: flex; align-items: center; gap: 10px; }
+.plan-slide-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; color: var(--gray-3); min-width: 18px;
+}
+.plan-slide-name { font-size: 13px; font-weight: 500; color: var(--gray-2); }
+.plan-slide-toggle.active .plan-slide-name { color: var(--white); }
+.plan-toggle-switch {
+  width: 34px; height: 19px; border-radius: 10px;
+  background: var(--gray-3); position: relative;
+  transition: background .2s; flex-shrink: 0;
+}
+.plan-toggle-switch::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #fff; transition: transform .2s;
+}
+.plan-slide-toggle.active .plan-toggle-switch { background: var(--accent); }
+.plan-slide-toggle.active .plan-toggle-switch::after { transform: translateX(15px); }
+
 /* Prospect tag no slide 1 */
 .capa-prospect-tag {
   font-size: 12px; font-weight: 500; color: var(--gray-2);
@@ -484,15 +667,7 @@ body::before {
 .capa-prospect-tag strong { color: var(--accent); font-weight: 700; }
 
 
-/* ── ENGRENAGENS — slide 3 ── */
-.gears-section {
-  margin-top: 14px;
-  background: rgba(10,15,30,0.6);
-  border: 1px solid rgba(46,109,212,0.15);
-  border-radius: 14px;
-  padding: 8px 0 4px;
-  overflow: hidden;
-}
+
 
 
 /* ── SLIDE 2 ── */
@@ -535,9 +710,7 @@ body::before {
 }
 
 /* Grid principal — display contents para os filhos herdarem o flex do slide */
-.s2-main-grid {
-  display: contents;
-}
+
 
 /* Coluna esquerda interna */
 .s2-left {
@@ -700,6 +873,11 @@ body::before {
         <input class="plan-input" id="planDate" type="date">
       </div>
     </div>
+
+    <!-- Toggles de slides -->
+    <span class="plan-slides-label">Slides da apresentação</span>
+    <div class="plan-slides" id="planSlidesConfig"></div>
+
     <button class="plan-btn" id="planStartBtn">
       <span>Iniciar Apresentação</span>
       <span>→</span>
@@ -802,475 +980,145 @@ body::before {
   <!-- SLIDE 3 — OS 3 PILARES -->
   <div class="slide" id="slide-3">
     <div class="blob blob-1"></div>
-    <div class="slide-title">Os três pilares que <span class="hl">movem o faturamento</span></div>
-    <div class="slide-sub">Toda alavanca de crescimento passa por um destes três pilares</div>
-    <div class="pilares-grid">
-      <div class="pilar-card p1">
-        <div class="pilar-icon-wrap">📢</div>
-        <div>
-          <div class="pilar-num">Pilar 01</div>
-          <div class="pilar-title">Canais de Aquisição</div>
+    <div class="slide-title">As três <span class="hl">engrenagens</span> que movem o faturamento</div>
+    <div class="slide-sub">Toda alavanca de crescimento passa por uma destas três engrenagens</div>
+    <div class="eng-grid">
+
+      <!-- Engrenagem 01 -->
+      <div class="eng-row e1">
+        <div class="eng-id">
+          <div class="eng-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.622 10.395l-1.097-2.65L20 6l-2-2-1.735 1.483-2.707-1.113L12.935 2h-1.954l-.632 2.401-2.645 1.115L6 4 4 6l1.453 1.75-1.08 2.657L2 11v2l2.401.655L5.516 16.3 4 18l2 2 1.755-1.479 2.651 1.097L11 22h2l.621-2.401 2.645-1.115L18 20l2-2-1.453-1.75 1.075-2.653L22 13v-2l-2.378-.605Z"/></svg>
+          </div>
+          <div>
+            <div class="eng-num">Engrenagem 01</div>
+            <div class="eng-name">Canais de Aquisição</div>
+          </div>
         </div>
-        <div class="pilar-desc">Estrutura <strong style="color:var(--accent)">previsível</strong> de geração de oportunidades — sem depender de indicação ou sorte.</div>
-        <div class="pilar-items">
-          <div class="pilar-item">Tráfego pago</div>
-          <div class="pilar-item">Tráfego orgânico</div>
-          <div class="pilar-item">Prospecção ativa</div>
-          <div class="pilar-item">Indicações estruturadas</div>
+        <div class="eng-resp">
+          <div class="eng-resp-label">Responsabilidade</div>
+          <div class="eng-resp-title">Gerar oportunidades de forma previsível</div>
+          <div class="eng-resp-desc">O canal é o único responsável por trazer o lead até a porta. Sem canal estruturado, o processo comercial não tem com quem trabalhar.</div>
         </div>
-      </div>
-      <div class="pilar-card p2">
-        <div class="pilar-icon-wrap">⚙️</div>
-        <div>
-          <div class="pilar-num">Pilar 02</div>
-          <div class="pilar-title">Processo Comercial</div>
-        </div>
-        <div class="pilar-desc">Da prospecção ao fechamento — cada etapa <strong style="color:var(--green)">definida, documentada e treinada.</strong></div>
-        <div class="pilar-items">
-          <div class="pilar-item">Abordagem e qualificação</div>
-          <div class="pilar-item">Cadência de follow-up</div>
-          <div class="pilar-item">Apresentação e negociação</div>
-          <div class="pilar-item">Fechamento</div>
+        <div class="eng-resolves">
+          <div class="eng-resolves-label">O que estruturamos</div>
+          <div class="eng-tag">Tráfego pago</div>
+          <div class="eng-tag">Tráfego orgânico</div>
+          <div class="eng-tag">Prospecção ativa</div>
+          <div class="eng-tag">Indicações estruturadas</div>
         </div>
       </div>
-      <div class="pilar-card p3">
-        <div class="pilar-icon-wrap">💎</div>
-        <div>
-          <div class="pilar-num">Pilar 03</div>
-          <div class="pilar-title">Oferta e Ticket Médio</div>
+
+      <!-- Engrenagem 02 -->
+      <div class="eng-row e2">
+        <div class="eng-id">
+          <div class="eng-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.622 10.395l-1.097-2.65L20 6l-2-2-1.735 1.483-2.707-1.113L12.935 2h-1.954l-.632 2.401-2.645 1.115L6 4 4 6l1.453 1.75-1.08 2.657L2 11v2l2.401.655L5.516 16.3 4 18l2 2 1.755-1.479 2.651 1.097L11 22h2l.621-2.401 2.645-1.115L18 20l2-2-1.453-1.75 1.075-2.653L22 13v-2l-2.378-.605Z"/></svg>
+          </div>
+          <div>
+            <div class="eng-num">Engrenagem 02</div>
+            <div class="eng-name">Processo Comercial</div>
+          </div>
         </div>
-        <div class="pilar-desc">Posicionamento, precificação e estratégias de <strong style="color:var(--yellow)">up/cross-sell</strong> para maximizar cada venda.</div>
-        <div class="pilar-items">
-          <div class="pilar-item">Posicionamento de oferta</div>
-          <div class="pilar-item">Precificação estratégica</div>
-          <div class="pilar-item">Up-sell e cross-sell</div>
-          <div class="pilar-item">Proposta de valor</div>
+        <div class="eng-resp">
+          <div class="eng-resp-label">Responsabilidade</div>
+          <div class="eng-resp-title">Transformar atenção em receita</div>
+          <div class="eng-resp-desc">O processo converte o lead que o canal trouxe. Cada etapa definida, documentada e treinada — do primeiro contato ao fechamento.</div>
+        </div>
+        <div class="eng-resolves">
+          <div class="eng-resolves-label">O que estruturamos</div>
+          <div class="eng-tag">Abordagem e qualificação</div>
+          <div class="eng-tag">Cadência de follow-up</div>
+          <div class="eng-tag">Apresentação e negociação</div>
+          <div class="eng-tag">Fechamento</div>
         </div>
       </div>
+
+      <!-- Engrenagem 03 -->
+      <div class="eng-row e3">
+        <div class="eng-id">
+          <div class="eng-icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.622 10.395l-1.097-2.65L20 6l-2-2-1.735 1.483-2.707-1.113L12.935 2h-1.954l-.632 2.401-2.645 1.115L6 4 4 6l1.453 1.75-1.08 2.657L2 11v2l2.401.655L5.516 16.3 4 18l2 2 1.755-1.479 2.651 1.097L11 22h2l.621-2.401 2.645-1.115L18 20l2-2-1.453-1.75 1.075-2.653L22 13v-2l-2.378-.605Z"/></svg>
+          </div>
+          <div>
+            <div class="eng-num">Engrenagem 03</div>
+            <div class="eng-name">Oferta e Ticket Médio</div>
+          </div>
+        </div>
+        <div class="eng-resp">
+          <div class="eng-resp-label">Responsabilidade</div>
+          <div class="eng-resp-title">Maximizar o valor de cada venda</div>
+          <div class="eng-resp-desc">A oferta determina quanto cada cliente paga. Posicionamento, precificação e estratégias de up/cross-sell ampliam o resultado sem aumentar o custo de aquisição.</div>
+        </div>
+        <div class="eng-resolves">
+          <div class="eng-resolves-label">O que estruturamos</div>
+          <div class="eng-tag">Posicionamento de oferta</div>
+          <div class="eng-tag">Precificação estratégica</div>
+          <div class="eng-tag">Up-sell e cross-sell</div>
+          <div class="eng-tag">Proposta de valor</div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="gears-section">
-      <svg id="gearsSvg" width="100%" height="110" viewBox="0 0 800 110" preserveAspectRatio="xMidYMid meet"></svg>
-    </div>
   </div>
 
   <!-- SLIDE 4 — DIAGNÓSTICO -->
   <div class="slide" id="slide-4">
-    <iframe class="diag-frame" srcdoc="&lt;!DOCTYPE html&gt;
-&lt;html lang=&quot;pt-BR&quot;&gt;
-&lt;head&gt;
-&lt;meta charset=&quot;UTF-8&quot;&gt;
-&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot;&gt;
-&lt;title&gt;Diagnóstico de Maturidade Comercial — Gustavo Benedetti&lt;/title&gt;
-&lt;link href=&quot;https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&amp;family=Space+Mono:wght@400;700&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
-&lt;style&gt;
-:root {
-  --bg: #050505; --card: #161616; --border: #2A2A2A;
-  --accent: #FAFAFA; --red: #EF4444; --green: #22C55E;
-  --text: #D4D4D4; --muted: #6B6B6B; --white: #FFFFFF;
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; min-height: 100%; }
-body {
-  background: var(--bg); font-family: &#x27;Montserrat&#x27;, sans-serif; color: var(--text);
-  -webkit-font-smoothing: antialiased;
-  min-height: 100vh; display: flex; flex-direction: column;
-  position: relative; overflow-x: hidden;
-}
-.grid-bg {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image: linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
-  background-size: 48px 48px;
-}
-.glow-orb { position: fixed; border-radius: 50%; pointer-events: none; opacity: .05; filter: blur(80px); z-index: 0; background: var(--white); width: 480px; height: 480px; left:50%; top:-120px; transform: translateX(-50%); }
+    <div class="blob blob-1"></div>
+    <div class="diag-wrap" id="diagWrap">
 
-/* TOP BAR */
-.topbar {
-  position: relative; z-index: 5;
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 18px 20px 0;
-}
-.topbar-brand { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); text-align: center; }
-.progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width .5s cubic-bezier(.16,1,.3,1); }
+      <!-- Top bar -->
+      <div class="diag-topbar">
+        <div class="diag-brand">Diagnóstico · Gustavo Benedetti</div>
+        <div class="diag-progress-track"><div class="diag-progress-fill" id="diagProgress"></div></div>
+      </div>
 
-/* MAIN */
-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px 18px 40px; position: relative; z-index: 2; }
-.screen { width: 100%; max-width: 480px; opacity: 0; transform: translateY(14px); transition: opacity .45s ease, transform .45s ease; display: none; }
-.screen.active { opacity: 1; transform: translateY(0); display: block; }
+      <!-- INTRO -->
+      <div class="diag-screen active" id="diag-intro">
+        <div class="diag-eyebrow">Mapa de Maturidade Comercial</div>
+        <div class="diag-title">Em que estágio<br>está o seu comercial?</div>
+        <div class="diag-desc">8 perguntas rápidas. Ao final, você descobre exatamente em qual dos 4 estágios sua empresa está hoje — e o que falta para o próximo.</div>
+        <label class="diag-field-label" for="diagName">Seu nome</label>
+        <input class="diag-input" id="diagName" type="text" placeholder="Como podemos te chamar?" autocomplete="off">
+        <button class="diag-btn" id="diagStartBtn" disabled>Começar diagnóstico</button>
+      </div>
 
-/* INTRO */
-.intro-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; text-align: center; }
-.intro-title { font-size: clamp(28px, 8vw, 38px); font-weight: 900; letter-spacing: -.03em; line-height: 1.05; color: var(--white); text-align: center; margin-bottom: 14px; }
-.intro-desc { font-size: 14px; color: var(--muted); line-height: 1.65; text-align: center; margin-bottom: 28px; }
-.intro-stages { display: flex; justify-content: center; gap: 6px; margin-bottom: 30px; }
-.intro-stage-dot { flex: 1; max-width: 70px; height: 4px; border-radius: 2px; background: var(--border); position: relative; }
-.intro-stage-dot::after { content: attr(data-label); position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 8px; color: var(--muted); white-space: nowrap; letter-spacing: .04em; }
-.field-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
-.field-input {
-  width: 100%; background: var(--card); border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px 18px; font-size: 16px; color: var(--white);
-  font-family: &#x27;Montserrat&#x27;, sans-serif; margin-bottom: 22px;
-  outline: none; transition: border-color .2s;
-}
-.field-input:focus { border-color: var(--accent); }
-.field-input::placeholder { color: var(--muted); }
-.btn-primary {
-  width: 100%; background: var(--white); color: #050505; border: none;
-  border-radius: 12px; padding: 17px; font-size: 14px; font-weight: 800;
-  letter-spacing: .03em; cursor: pointer; transition: all .2s;
-  font-family: &#x27;Montserrat&#x27;, sans-serif;
-}
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,.12); }
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+      <!-- PERGUNTA -->
+      <div class="diag-screen" id="diag-question">
+        <div class="diag-q-counter" id="diagCounter">PERGUNTA 1 / 8</div>
+        <div class="diag-q-axis" id="diagAxis">VISIBILIDADE</div>
+        <div class="diag-q-text" id="diagQText"></div>
+        <div class="diag-options" id="diagOptions"></div>
+        <div class="diag-back" id="diagBack">← Voltar</div>
+      </div>
 
-/* QUESTION */
-.q-counter { font-family: &#x27;Space Mono&#x27;, monospace; font-size: 11px; color: var(--muted); text-align: center; margin-bottom: 10px; letter-spacing: .08em; }
-.q-axis { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); text-align: center; margin-bottom: 16px; }
-.q-text { font-size: clamp(19px, 5vw, 24px); font-weight: 800; color: var(--white); line-height: 1.3; text-align: center; margin-bottom: 26px; letter-spacing: -.01em; }
-.q-options { display: flex; flex-direction: column; gap: 10px; }
-.q-option {
-  background: var(--card); border: 1px solid var(--border); border-radius: 13px;
-  padding: 16px 18px; text-align: left; cursor: pointer; transition: all .2s;
-  font-family: &#x27;Montserrat&#x27;, sans-serif; font-size: 13.5px; color: var(--text); line-height: 1.5;
-  display: flex; align-items: center; gap: 12px;
-}
-.q-option:hover { border-color: rgba(255,255,255,.3); background: #1d1d1d; }
-.q-option.selected { border-color: var(--white); background: rgba(255,255,255,.06); color: var(--white); }
-.q-option-letter {
-  width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  font-family: &#x27;Space Mono&#x27;, monospace; font-size: 10px; color: var(--muted); font-weight: 700;
-}
-.q-option.selected .q-option-letter { border-color: var(--white); color: var(--white); background: rgba(255,255,255,.1); }
-.q-back { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; cursor: pointer; margin-top: 22px; justify-content: center; transition: color .2s; }
-.q-back:hover { color: var(--text); }
+      <!-- CALCULANDO -->
+      <div class="diag-screen" id="diag-calc">
+        <div class="diag-calc-wrap">
+          <div class="diag-spinner"></div>
+          <div class="diag-calc-text">Calculando seu estágio de maturidade...</div>
+        </div>
+      </div>
 
-/* CALCULATING */
-.calc-wrap { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 0; }
-.calc-spinner { width: 44px; height: 44px; border: 2px solid var(--border); border-top-color: var(--white); border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 22px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.calc-text { font-size: 13px; color: var(--muted); letter-spacing: .04em; }
+      <!-- RESULTADO -->
+      <div class="diag-screen" id="diag-result">
+        <div class="diag-eyebrow" id="diagResGreeting">Resultado de</div>
+        <div class="diag-res-track" id="diagResTrack"></div>
+        <div class="diag-title" id="diagResTitle"></div>
+        <div class="diag-desc" id="diagResScore" style="margin-bottom:16px;"></div>
+        <div class="diag-res-card" id="diagResCard">
+          <span class="diag-res-tag" id="diagResTag"></span>
+          <p class="diag-res-text" id="diagResText"></p>
+        </div>
+        <a class="diag-btn-wa" id="diagWaBtn" href="#" target="_blank" rel="noopener">
+          <span>📲</span><span>Enviar resultado no WhatsApp</span>
+        </a>
+        <div class="diag-res-note">Toque para enviar seu resultado direto para Gustavo — ele responde pessoalmente.</div>
+      </div>
 
-/* RESULT */
-.res-eyebrow { font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); text-align: center; margin-bottom: 10px; }
-.res-stage-track { display: flex; gap: 5px; justify-content: center; margin-bottom: 22px; }
-.res-stage-seg { flex: 1; max-width: 60px; height: 5px; border-radius: 3px; background: var(--border); }
-.res-stage-seg.filled { background: var(--white); }
-.res-title { font-size: clamp(26px, 8vw, 36px); font-weight: 900; letter-spacing: -.03em; color: var(--white); text-align: center; line-height: 1.05; margin-bottom: 6px; }
-.res-score { font-family: &#x27;Space Mono&#x27;, monospace; font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 26px; }
-.res-score strong { color: var(--text); }
-.res-card {
-  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
-  padding: 22px 20px; margin-bottom: 22px; position: relative; overflow: hidden;
-}
-.res-card::before { content: &#x27;&#x27;; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--res-clr, var(--accent)); }
-.res-tag {
-  display: inline-flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 700;
-  letter-spacing: .14em; text-transform: uppercase; padding: 4px 11px; border-radius: 20px;
-  margin-bottom: 14px; color: var(--res-clr, var(--accent)); border: 1px solid var(--res-clr, var(--accent));
-}
-.res-text { font-size: 13.5px; color: var(--text); line-height: 1.7; }
-.res-text strong { color: var(--white); }
-.btn-whatsapp {
-  width: 100%; background: var(--white); color: #050505; border: none;
-  border-radius: 14px; padding: 18px; font-size: 14px; font-weight: 800;
-  letter-spacing: .02em; cursor: pointer; text-decoration: none;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  font-family: &#x27;Montserrat&#x27;, sans-serif; transition: all .2s; margin-bottom: 14px;
-}
-.btn-whatsapp:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,255,255,.12); }
-.res-note { font-size: 11px; color: var(--muted); text-align: center; line-height: 1.6; }
-
-footer { position: relative; z-index: 2; text-align: center; padding: 0 18px 24px; font-size: 9px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
-&lt;/style&gt;
-&lt;/head&gt;
-&lt;body&gt;
-
-&lt;div class=&quot;grid-bg&quot;&gt;&lt;/div&gt;&lt;div class=&quot;glow-orb&quot;&gt;&lt;/div&gt;
-
-&lt;div class=&quot;topbar&quot;&gt;
-  &lt;div class=&quot;topbar-brand&quot;&gt;Diagnóstico · Gustavo Benedetti&lt;/div&gt;
-  &lt;div class=&quot;progress-track&quot;&gt;&lt;div class=&quot;progress-fill&quot; id=&quot;progress&quot;&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;main&gt;
-
-  &lt;!-- INTRO --&gt;
-  &lt;div class=&quot;screen active&quot; id=&quot;screen-intro&quot;&gt;
-    &lt;div class=&quot;intro-eyebrow&quot;&gt;Mapa de Maturidade Comercial&lt;/div&gt;
-    &lt;h1 class=&quot;intro-title&quot;&gt;Em que estágio&lt;br&gt;está o seu comercial?&lt;/h1&gt;
-    &lt;p class=&quot;intro-desc&quot;&gt;8 perguntas rápidas. Ao final, você descobre exatamente em qual dos 4 estágios sua empresa está hoje — e o que falta para o próximo.&lt;/p&gt;
-    &lt;label class=&quot;field-label&quot; for=&quot;nameInput&quot;&gt;Seu nome&lt;/label&gt;
-    &lt;input class=&quot;field-input&quot; id=&quot;nameInput&quot; type=&quot;text&quot; placeholder=&quot;Como podemos te chamar?&quot; autocomplete=&quot;off&quot;&gt;
-    &lt;button class=&quot;btn-primary&quot; id=&quot;startBtn&quot; disabled&gt;Começar diagnóstico&lt;/button&gt;
-  &lt;/div&gt;
-
-  &lt;!-- QUESTION (template, conteúdo injetado via JS) --&gt;
-  &lt;div class=&quot;screen&quot; id=&quot;screen-question&quot;&gt;
-    &lt;div class=&quot;q-counter&quot; id=&quot;qCounter&quot;&gt;PERGUNTA 1 / 8&lt;/div&gt;
-    &lt;div class=&quot;q-axis&quot; id=&quot;qAxis&quot;&gt;VISIBILIDADE&lt;/div&gt;
-    &lt;div class=&quot;q-text&quot; id=&quot;qText&quot;&gt;&lt;/div&gt;
-    &lt;div class=&quot;q-options&quot; id=&quot;qOptions&quot;&gt;&lt;/div&gt;
-    &lt;div class=&quot;q-back&quot; id=&quot;qBack&quot;&gt;← Voltar&lt;/div&gt;
-  &lt;/div&gt;
-
-  &lt;!-- CALCULATING --&gt;
-  &lt;div class=&quot;screen&quot; id=&quot;screen-calc&quot;&gt;
-    &lt;div class=&quot;calc-wrap&quot;&gt;
-      &lt;div class=&quot;calc-spinner&quot;&gt;&lt;/div&gt;
-      &lt;div class=&quot;calc-text&quot;&gt;Calculando seu estágio de maturidade...&lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-
-  &lt;!-- RESULT --&gt;
-  &lt;div class=&quot;screen&quot; id=&quot;screen-result&quot;&gt;
-    &lt;div class=&quot;res-eyebrow&quot; id=&quot;resGreeting&quot;&gt;Resultado de&lt;/div&gt;
-    &lt;div class=&quot;res-stage-track&quot; id=&quot;resTrack&quot;&gt;&lt;/div&gt;
-    &lt;h2 class=&quot;res-title&quot; id=&quot;resTitle&quot;&gt;&lt;/h2&gt;
-    &lt;div class=&quot;res-score&quot; id=&quot;resScore&quot;&gt;&lt;/div&gt;
-    &lt;div class=&quot;res-card&quot; id=&quot;resCard&quot;&gt;
-      &lt;span class=&quot;res-tag&quot; id=&quot;resTag&quot;&gt;&lt;/span&gt;
-      &lt;p class=&quot;res-text&quot; id=&quot;resText&quot;&gt;&lt;/p&gt;
-    &lt;/div&gt;
-    &lt;a class=&quot;btn-whatsapp&quot; id=&quot;waBtn&quot; href=&quot;#&quot; target=&quot;_blank&quot; rel=&quot;noopener&quot;&gt;
-      &lt;span&gt;📲&lt;/span&gt;&lt;span&gt;Enviar resultado no WhatsApp&lt;/span&gt;
-    &lt;/a&gt;
-    &lt;p class=&quot;res-note&quot;&gt;Toque para enviar seu resultado direto para Gustavo — ele responde pessoalmente.&lt;/p&gt;
-  &lt;/div&gt;
-
-&lt;/main&gt;
-
-&lt;footer&gt;Processo Comercial · Mapa de Maturidade&lt;/footer&gt;
-
-&lt;script&gt;
-/* ════════ CONFIG ════════ */
-const WHATSAPP_NUMBER = &#x27;5548984649886&#x27;;
-
-/* ════════ PERGUNTAS ════════ */
-/* Cada opção vale de 1 (Caótico) a 4 (Previsível) pontos */
-const QUESTIONS = [
-  {
-    axis: &#x27;Visibilidade&#x27;,
-    text: &#x27;Como você sabe em que etapa cada oportunidade está, agora?&#x27;,
-    options: [
-      &#x27;Não sei dizer — depende da memória do vendedor&#x27;,
-      &#x27;Tenho uma planilha, mas raramente está atualizada&#x27;,
-      &#x27;Uso CRM, mas com falhas e dados incompletos&#x27;,
-      &#x27;CRM atualizado em tempo real — decido com base nele&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Visibilidade&#x27;,
-    text: &#x27;Quando um vendedor sai da empresa, o que acontece com as oportunidades dele?&#x27;,
-    options: [
-      &#x27;Se perdem, ou ninguém sabe o histórico&#x27;,
-      &#x27;Outro vendedor tenta reconstruir do zero&#x27;,
-      &#x27;O histórico existe, mas leva tempo para repassar&#x27;,
-      &#x27;Qualquer pessoa assume sem perda de contexto&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Processo&#x27;,
-    text: &#x27;As etapas do seu processo comercial são…&#x27;,
-    options: [
-      &#x27;Não existem etapas formais — cada um faz do seu jeito&#x27;,
-      &#x27;Existem no papel, mas raramente seguidas&#x27;,
-      &#x27;Definidas e seguidas na maior parte do tempo&#x27;,
-      &#x27;Definidas, com critério claro de avanço entre elas&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Processo&#x27;,
-    text: &#x27;Existe um material (playbook ou script) que orienta como conduzir a venda?&#x27;,
-    options: [
-      &#x27;Não — cada vendedor improvisa&#x27;,
-      &#x27;Existe, mas está desatualizado ou ninguém usa&#x27;,
-      &#x27;Existe e é usado, mas raramente revisado&#x27;,
-      &#x27;Existe, é vivo, testado e adaptado por canal e produto&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Cadência&#x27;,
-    text: &#x27;Como funciona o follow-up de leads que não respondem de imediato?&#x27;,
-    options: [
-      &#x27;Se não responde, é descartado&#x27;,
-      &#x27;Follow-up acontece, mas sem prazo ou regra definida&#x27;,
-      &#x27;Existe uma cadência, mas nem sempre é cumprida&#x27;,
-      &#x27;Cadência programada e cumprida, com regra de reengajamento&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Cadência&#x27;,
-    text: &#x27;Em quanto tempo, em média, um lead recebe a primeira resposta?&#x27;,
-    options: [
-      &#x27;Não sei dizer — varia muito&#x27;,
-      &#x27;Em algumas horas, às vezes no mesmo dia&#x27;,
-      &#x27;Em até 1 hora, na maioria dos casos&#x27;,
-      &#x27;Resposta imediata, com protocolo definido&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Gestão&#x27;,
-    text: &#x27;Como é a gestão do time comercial hoje?&#x27;,
-    options: [
-      &#x27;Só se olha o resultado no fim do mês&#x27;,
-      &#x27;Reunião acontece, mas sem dados estruturados&#x27;,
-      &#x27;Reunião semanal com pipeline, decisões pontuais&#x27;,
-      &#x27;Rituais semanais com métricas de atividade, não só resultado&#x27;
-    ]
-  },
-  {
-    axis: &#x27;Gestão&#x27;,
-    text: &#x27;Se o resultado cair no mês que vem, você sabe dizer, hoje, qual etapa travou?&#x27;,
-    options: [
-      &#x27;Não tenho essa visibilidade&#x27;,
-      &#x27;Eu teria que investigar para descobrir&#x27;,
-      &#x27;Tenho uma ideia, mas não com precisão&#x27;,
-      &#x27;Sei exatamente — acompanho taxa de avanço por etapa&#x27;
-    ]
-  }
-];
-
-/* ════════ ESTÁGIOS ════════ */
-const STAGES = [
-  {
-    min: 8, max: 13, name: &#x27;Caótico&#x27;, idx: 1, clr: &#x27;#EF4444&#x27;,
-    tag: &#x27;⚠ Alerta&#x27;,
-    text: &#x27;Seu comercial roda no impulso e na memória dos vendedores. Isso significa que, toda vez que alguém sai da empresa, parte do conhecimento vai junto — e o crescimento depende de sorte, não de sistema. &lt;strong&gt;A boa notícia: esse é o estágio mais fácil de sair&lt;/strong&gt;, porque qualquer estrutura básica já gera ganho imediato.&#x27;
-  },
-  {
-    min: 14, max: 19, name: &#x27;Reativo&#x27;, idx: 2, clr: &#x27;#EF4444&#x27;,
-    tag: &#x27;⚠ Ponto de atenção&#x27;,
-    text: &#x27;Você já tem peças do processo — CRM, algum script, alguma cadência — mas elas não conversam entre si. O time apaga incêndio em vez de seguir um fluxo. &lt;strong&gt;O risco aqui é achar que &quot;já tem processo&quot; e parar de evoluir&lt;/strong&gt; — porque o que existe hoje não escala além de um certo tamanho de time.&#x27;
-  },
-  {
-    min: 20, max: 25, name: &#x27;Estruturado&#x27;, idx: 3, clr: &#x27;#22C55E&#x27;,
-    tag: &#x27;✓ Acima da média&#x27;,
-    text: &#x27;Seu comercial já tem disciplina: etapas claras, follow-up com regra, reuniões de pipeline. Isso já coloca você à frente da maioria das empresas do seu porte. &lt;strong&gt;O que falta para o próximo nível é tornar a gestão preditiva&lt;/strong&gt;, não só organizada — acompanhar taxa de avanço por etapa, não só o resultado final do mês.&#x27;
-  },
-  {
-    min: 26, max: 32, name: &#x27;Previsível&#x27;, idx: 4, clr: &#x27;#22C55E&#x27;,
-    tag: &#x27;✓ Elite&#x27;,
-    text: &#x27;Seu comercial já opera como sistema, não como esforço individual. Isso coloca sua empresa entre a minoria que realmente profissionalizou o processo. &lt;strong&gt;A próxima fronteira não é mais estruturar — é escalar sem perder qualidade:&lt;/strong&gt; arquitetura de time, unit economics e capacity planning são os próximos degraus.&#x27;
-  }
-];
-
-/* ════════ ESTADO ════════ */
-let userName = &#x27;&#x27;;
-let currentQ = 0;
-let answers = new Array(QUESTIONS.length).fill(null);
-
-const screens = {
-  intro: document.getElementById(&#x27;screen-intro&#x27;),
-  question: document.getElementById(&#x27;screen-question&#x27;),
-  calc: document.getElementById(&#x27;screen-calc&#x27;),
-  result: document.getElementById(&#x27;screen-result&#x27;)
-};
-const progressFill = document.getElementById(&#x27;progress&#x27;);
-
-function showScreen(name) {
-  Object.values(screens).forEach(s =&gt; s.classList.remove(&#x27;active&#x27;));
-  screens[name].classList.add(&#x27;active&#x27;);
-}
-
-function updateProgress(frac) {
-  progressFill.style.width = (frac * 100) + &#x27;%&#x27;;
-}
-
-/* INTRO */
-const nameInput = document.getElementById(&#x27;nameInput&#x27;);
-const startBtn = document.getElementById(&#x27;startBtn&#x27;);
-nameInput.addEventListener(&#x27;input&#x27;, () =&gt; {
-  startBtn.disabled = nameInput.value.trim().length &lt; 2;
-});
-nameInput.addEventListener(&#x27;keydown&#x27;, e =&gt; { if (e.key === &#x27;Enter&#x27; &amp;&amp; !startBtn.disabled) startBtn.click(); });
-startBtn.addEventListener(&#x27;click&#x27;, () =&gt; {
-  userName = nameInput.value.trim();
-  currentQ = 0;
-  renderQuestion();
-  showScreen(&#x27;question&#x27;);
-});
-
-/* QUESTION RENDER */
-const qCounter = document.getElementById(&#x27;qCounter&#x27;);
-const qAxis = document.getElementById(&#x27;qAxis&#x27;);
-const qText = document.getElementById(&#x27;qText&#x27;);
-const qOptions = document.getElementById(&#x27;qOptions&#x27;);
-const qBack = document.getElementById(&#x27;qBack&#x27;);
-
-function renderQuestion() {
-  const q = QUESTIONS[currentQ];
-  qCounter.textContent = `PERGUNTA ${currentQ + 1} / ${QUESTIONS.length}`;
-  qAxis.textContent = q.axis.toUpperCase();
-  qText.textContent = q.text;
-  updateProgress(currentQ / QUESTIONS.length);
-
-  qOptions.innerHTML = &#x27;&#x27;;
-  const letters = [&#x27;A&#x27;, &#x27;B&#x27;, &#x27;C&#x27;, &#x27;D&#x27;];
-  q.options.forEach((opt, i) =&gt; {
-    const div = document.createElement(&#x27;div&#x27;);
-    div.className = &#x27;q-option&#x27; + (answers[currentQ] === i + 1 ? &#x27; selected&#x27; : &#x27;&#x27;);
-    div.innerHTML = `&lt;span class=&quot;q-option-letter&quot;&gt;${letters[i]}&lt;/span&gt;&lt;span&gt;${opt}&lt;/span&gt;`;
-    div.addEventListener(&#x27;click&#x27;, () =&gt; selectAnswer(i + 1));
-    qOptions.appendChild(div);
-  });
-
-  qBack.style.visibility = currentQ === 0 ? &#x27;hidden&#x27; : &#x27;visible&#x27;;
-}
-
-function selectAnswer(points) {
-  answers[currentQ] = points;
-  renderQuestion();
-  setTimeout(() =&gt; {
-    if (currentQ &lt; QUESTIONS.length - 1) {
-      currentQ++;
-      renderQuestion();
-    } else {
-      updateProgress(1);
-      showScreen(&#x27;calc&#x27;);
-      setTimeout(computeResult, 1400);
-    }
-  }, 280);
-}
-
-qBack.addEventListener(&#x27;click&#x27;, () =&gt; {
-  if (currentQ &gt; 0) { currentQ--; renderQuestion(); }
-});
-
-/* RESULT */
-function computeResult() {
-  const total = answers.reduce((a, b) =&gt; a + b, 0);
-  const stage = STAGES.find(s =&gt; total &gt;= s.min &amp;&amp; total &lt;= s.max) || STAGES[0];
-
-  document.getElementById(&#x27;resGreeting&#x27;).textContent = `Resultado de ${userName}`;
-  document.getElementById(&#x27;resTitle&#x27;).textContent = stage.name;
-  document.getElementById(&#x27;resScore&#x27;).innerHTML = `Estágio ${stage.idx} de 4 &amp;nbsp;·&amp;nbsp; &lt;strong&gt;${total}/32 pontos&lt;/strong&gt;`;
-
-  const track = document.getElementById(&#x27;resTrack&#x27;);
-  track.innerHTML = &#x27;&#x27;;
-  for (let i = 1; i &lt;= 4; i++) {
-    const seg = document.createElement(&#x27;div&#x27;);
-    seg.className = &#x27;res-stage-seg&#x27; + (i &lt;= stage.idx ? &#x27; filled&#x27; : &#x27;&#x27;);
-    track.appendChild(seg);
-  }
-
-  document.getElementById(&#x27;resCard&#x27;).style.setProperty(&#x27;--res-clr&#x27;, stage.clr);
-  document.getElementById(&#x27;resTag&#x27;).textContent = stage.tag;
-  document.getElementById(&#x27;resTag&#x27;).style.color = stage.clr;
-  document.getElementById(&#x27;resTag&#x27;).style.borderColor = stage.clr;
-  document.getElementById(&#x27;resText&#x27;).innerHTML = stage.text;
-
-  const msg = `Olá! Meu nome é ${userName}!\nAcabei de fazer o Diagnóstico de Maturidade Comercial, e meu resultado foi: *${stage.name}* (${total}/32 pontos).\n\nQuero entender como sair desse estágio!`;
-  document.getElementById(&#x27;waBtn&#x27;).href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-
-  showScreen(&#x27;result&#x27;);
-}
-&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-" allowfullscreen></iframe>
+      <div class="diag-footer">Processo Comercial · Mapa de Maturidade</div>
+    </div>
   </div>
 
   <!-- SLIDE 5 — PRÓXIMOS PASSOS -->
@@ -1323,7 +1171,198 @@ function computeResult() {
 
 <script>
 
+// ── DIAGNÓSTICO — slide 4 ──
+(function() {
+  var WHATSAPP = '5548984649886';
+
+  var QUESTIONS = [
+    { axis: 'Visibilidade', text: 'Como você sabe em que etapa cada oportunidade está, agora?', options: ['Não sei dizer — depende da memória do vendedor', 'Tenho uma planilha, mas raramente está atualizada', 'Uso CRM, mas com falhas e dados incompletos', 'CRM atualizado em tempo real — decido com base nele'] },
+    { axis: 'Visibilidade', text: 'Quando um vendedor sai da empresa, o que acontece com as oportunidades dele?', options: ['Se perdem, ou ninguém sabe o histórico', 'Outro vendedor tenta reconstruir do zero', 'O histórico existe, mas leva tempo para repassar', 'Qualquer pessoa assume sem perda de contexto'] },
+    { axis: 'Processo', text: 'As etapas do seu processo comercial são…', options: ['Não existem etapas formais — cada um faz do seu jeito', 'Existem no papel, mas raramente seguidas', 'Definidas e seguidas na maior parte do tempo', 'Definidas, com critério claro de avanço entre elas'] },
+    { axis: 'Processo', text: 'Existe um material (playbook ou script) que orienta como conduzir a venda?', options: ['Não — cada vendedor improvisa', 'Existe, mas está desatualizado ou ninguém usa', 'Existe e é usado, mas raramente revisado', 'Existe, é vivo, testado e adaptado por canal e produto'] },
+    { axis: 'Cadência', text: 'Como funciona o follow-up de leads que não respondem de imediato?', options: ['Se não responde, é descartado', 'Follow-up acontece, mas sem prazo ou regra definida', 'Existe uma cadência, mas nem sempre é cumprida', 'Cadência programada e cumprida, com regra de reengajamento'] },
+    { axis: 'Cadência', text: 'Em quanto tempo, em média, um lead recebe a primeira resposta?', options: ['Não sei dizer — varia muito', 'Em algumas horas, às vezes no mesmo dia', 'Em até 1 hora, na maioria dos casos', 'Resposta imediata, com protocolo definido'] },
+    { axis: 'Gestão', text: 'Como é a gestão do time comercial hoje?', options: ['Só se olha o resultado no fim do mês', 'Reunião acontece, mas sem dados estruturados', 'Reunião semanal com pipeline, decisões pontuais', 'Rituais semanais com métricas de atividade, não só resultado'] },
+    { axis: 'Gestão', text: 'Se o resultado cair no mês que vem, você sabe dizer, hoje, qual etapa travou?', options: ['Não tenho essa visibilidade', 'Eu teria que investigar para descobrir', 'Tenho uma ideia, mas não com precisão', 'Sei exatamente — acompanho taxa de avanço por etapa'] }
+  ];
+
+  var STAGES = [
+    { min:8,  max:13, name:'Caótico',     idx:1, clr:'#ef4444', tag:'⚠ Alerta',          text:'Seu comercial roda no impulso e na memória dos vendedores. Toda vez que alguém sai da empresa, parte do conhecimento vai junto — e o crescimento depende de sorte, não de sistema. <strong>A boa notícia: esse é o estágio mais fácil de sair</strong>, porque qualquer estrutura básica já gera ganho imediato.' },
+    { min:14, max:19, name:'Reativo',     idx:2, clr:'#ef4444', tag:'⚠ Ponto de atenção', text:'Você já tem peças do processo — CRM, algum script, alguma cadência — mas elas não conversam entre si. O time apaga incêndio em vez de seguir um fluxo. <strong>O risco é achar que "já tem processo" e parar de evoluir</strong> — porque o que existe hoje não escala além de um certo tamanho de time.' },
+    { min:20, max:25, name:'Estruturado', idx:3, clr:'#60a5fa', tag:'✓ Acima da média',   text:'Seu comercial já tem disciplina: etapas claras, follow-up com regra, reuniões de pipeline. Isso já coloca você à frente da maioria das empresas do seu porte. <strong>O que falta para o próximo nível é tornar a gestão preditiva</strong>, não só organizada — acompanhar taxa de avanço por etapa, não só o resultado final do mês.' },
+    { min:26, max:32, name:'Previsível',  idx:4, clr:'#22c55e', tag:'✓ Elite',             text:'Seu comercial já opera como sistema, não como esforço individual. <strong>A próxima fronteira não é mais estruturar — é escalar sem perder qualidade:</strong> arquitetura de time, unit economics e capacity planning são os próximos degraus.' }
+  ];
+
+  var userName = '', currentQ = 0, answers = new Array(8).fill(null);
+
+  function diagShowScreen(id) {
+    ['diag-intro','diag-question','diag-calc','diag-result'].forEach(function(s) {
+      var el = document.getElementById(s);
+      if (el) { el.classList.remove('active'); el.style.display = 'none'; }
+    });
+    var target = document.getElementById(id);
+    if (target) { target.style.display = 'block'; setTimeout(function(){ target.classList.add('active'); }, 10); }
+  }
+
+  function diagSetProgress(frac) {
+    var el = document.getElementById('diagProgress');
+    if (el) el.style.width = (frac * 100) + '%';
+  }
+
+  function diagRenderQ() {
+    var q = QUESTIONS[currentQ];
+    var counter = document.getElementById('diagCounter');
+    var axis = document.getElementById('diagAxis');
+    var text = document.getElementById('diagQText');
+    var opts = document.getElementById('diagOptions');
+    var back = document.getElementById('diagBack');
+    if (!counter) return;
+    counter.textContent = 'PERGUNTA ' + (currentQ + 1) + ' / ' + QUESTIONS.length;
+    axis.textContent = q.axis.toUpperCase();
+    text.textContent = q.text;
+    diagSetProgress(currentQ / QUESTIONS.length);
+    opts.innerHTML = '';
+    var letters = ['A','B','C','D'];
+    q.options.forEach(function(opt, i) {
+      var div = document.createElement('div');
+      div.className = 'diag-option' + (answers[currentQ] === i + 1 ? ' selected' : '');
+      div.innerHTML = '<span class="diag-opt-letter">' + letters[i] + '</span><span>' + opt + '</span>';
+      div.addEventListener('click', function() { diagSelect(i + 1); });
+      opts.appendChild(div);
+    });
+    if (back) back.style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+  }
+
+  function diagSelect(points) {
+    answers[currentQ] = points;
+    diagRenderQ();
+    setTimeout(function() {
+      if (currentQ < QUESTIONS.length - 1) {
+        currentQ++;
+        diagRenderQ();
+      } else {
+        diagSetProgress(1);
+        diagShowScreen('diag-calc');
+        setTimeout(diagShowResult, 1400);
+      }
+    }, 280);
+  }
+
+  function diagShowResult() {
+    var total = answers.reduce(function(a, b) { return a + (b || 0); }, 0);
+    var stage = STAGES.find(function(s) { return total >= s.min && total <= s.max; }) || STAGES[0];
+
+    var greet = document.getElementById('diagResGreeting');
+    var title = document.getElementById('diagResTitle');
+    var score = document.getElementById('diagResScore');
+    var track = document.getElementById('diagResTrack');
+    var card  = document.getElementById('diagResCard');
+    var tag   = document.getElementById('diagResTag');
+    var resText = document.getElementById('diagResText');
+    var waBtn = document.getElementById('diagWaBtn');
+
+    if (greet) greet.textContent = 'Resultado de ' + userName;
+    if (title) title.textContent = stage.name;
+    if (score) score.textContent = 'Estágio ' + stage.idx + ' de 4  ·  ' + total + '/32 pontos';
+    if (track) {
+      track.innerHTML = '';
+      for (var i = 1; i <= 4; i++) {
+        var seg = document.createElement('div');
+        seg.className = 'diag-res-seg' + (i <= stage.idx ? ' filled' : '');
+        seg.style.background = i <= stage.idx ? stage.clr : '';
+        track.appendChild(seg);
+      }
+    }
+    if (card) card.style.setProperty('--res-clr', stage.clr);
+    if (tag)  { tag.textContent = stage.tag; tag.style.color = stage.clr; tag.style.borderColor = stage.clr; }
+    if (resText) resText.innerHTML = stage.text;
+    if (waBtn) {
+      var msg = 'Olá! Meu nome é ' + userName + '!\nAcabei de fazer o Diagnóstico de Maturidade Comercial, e meu resultado foi: *' + stage.name + '* (' + total + '/32 pontos).\n\nQuero entender como sair desse estágio!';
+      waBtn.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
+    }
+    diagShowScreen('diag-result');
+  }
+
+  // Init quando o DOM estiver pronto
+  function diagInit() {
+    var nameInput = document.getElementById('diagName');
+    var startBtn  = document.getElementById('diagStartBtn');
+    var backBtn   = document.getElementById('diagBack');
+
+    if (!nameInput || !startBtn) return;
+
+    nameInput.addEventListener('input', function() {
+      startBtn.disabled = nameInput.value.trim().length < 2;
+    });
+    nameInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !startBtn.disabled) startBtn.click();
+    });
+    startBtn.addEventListener('click', function() {
+      userName = nameInput.value.trim();
+      currentQ = 0;
+      answers = new Array(8).fill(null);
+      diagRenderQ();
+      diagShowScreen('diag-question');
+    });
+    if (backBtn) {
+      backBtn.addEventListener('click', function() {
+        if (currentQ > 0) { currentQ--; diagRenderQ(); }
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', diagInit);
+  } else {
+    diagInit();
+  }
+})();
+
 // ── PLANNING SCREEN ──
+// Configuração dos slides disponíveis
+var SLIDES_CONFIG = [
+  { id: 1, name: 'Capa',                     required: true  },
+  { id: 2, name: 'Quem somos',               required: false },
+  { id: 3, name: 'As três engrenagens',      required: false },
+  { id: 4, name: 'Diagnóstico',              required: false },
+  { id: 5, name: 'Próximos passos',          required: false },
+];
+
+// Estado dos slides ativos (todos por padrão)
+var activeSlideIds = SLIDES_CONFIG.map(function(s) { return s.id; });
+
+// Renderizar toggles
+(function renderToggles() {
+  var container = document.getElementById('planSlidesConfig');
+  if (!container) return;
+  SLIDES_CONFIG.forEach(function(slide) {
+    var isActive = activeSlideIds.indexOf(slide.id) !== -1;
+    var div = document.createElement('div');
+    div.className = 'plan-slide-toggle' + (isActive ? ' active' : '');
+    div.dataset.slideId = slide.id;
+    div.innerHTML =
+      '<div class="plan-slide-info">' +
+        '<span class="plan-slide-num">0' + slide.id + '</span>' +
+        '<span class="plan-slide-name">' + slide.name + '</span>' +
+        (slide.required ? '<span style="font-size:9px;color:var(--gray-3);margin-left:4px;">(obrigatório)</span>' : '') +
+      '</div>' +
+      '<div class="plan-toggle-switch"></div>';
+    if (!slide.required) {
+      div.addEventListener('click', function() {
+        var idx = activeSlideIds.indexOf(slide.id);
+        if (idx !== -1) {
+          activeSlideIds.splice(idx, 1);
+          div.classList.remove('active');
+        } else {
+          activeSlideIds.push(slide.id);
+          activeSlideIds.sort(function(a,b){return a-b;});
+          div.classList.add('active');
+        }
+      });
+    }
+    container.appendChild(div);
+  });
+})();
 (function() {
   const screen   = document.getElementById('planning-screen');
   const startBtn = document.getElementById('planStartBtn');
@@ -1353,151 +1392,48 @@ function computeResult() {
       if (nameEl) nameEl.textContent = prospect;
       if (tagEl)  tagEl.style.display = 'block';
     }
+    // Aplicar slides escolhidos e reconstruir navegação
+    visibleSlides = activeSlideIds.slice().sort(function(a,b){return a-b;});
+    if (visibleSlides.indexOf(1) === -1) visibleSlides.unshift(1); // capa sempre presente
+    buildNav();
     screen.classList.add('hidden');
   });
 })();
 
 
 
-// ── ENGRENAGENS — slide 3 ──
-(function() {
-  function gearPath(cx, cy, teeth, r1, r2) {
-    var step = (2 * Math.PI) / teeth;
-    var d = '';
-    for (var i = 0; i < teeth; i++) {
-      var a = i * step - Math.PI / 2;
-      var w = step * 0.28;
-      var a0 = a - w, a1 = a + w;
-      var x0 = cx + r1 * Math.cos(a0), y0 = cy + r1 * Math.sin(a0);
-      var x1 = cx + r2 * Math.cos(a0), y1 = cy + r2 * Math.sin(a0);
-      var x2 = cx + r2 * Math.cos(a1), y2 = cy + r2 * Math.sin(a1);
-      var x3 = cx + r1 * Math.cos(a1), y3 = cy + r1 * Math.sin(a1);
-      if (i === 0) d += 'M' + x0 + ',' + y0;
-      d += ' L' + x1 + ',' + y1 + ' L' + x2 + ',' + y2 + ' L' + x3 + ',' + y3;
-      var na0 = (i + 1) * step - Math.PI / 2 - w;
-      d += ' A' + r1 + ',' + r1 + ' 0 0,1 ' + (cx + r1 * Math.cos(na0)) + ',' + (cy + r1 * Math.sin(na0));
-    }
-    return d + ' Z';
-  }
-
-  var NS = 'http://www.w3.org/2000/svg';
-  var svg = document.getElementById('gearsSvg');
-  if (!svg) return;
-
-  var gearDefs = [
-    { cx: 185, cy: 52, teeth: 12, r1: 36, r2: 46, color: '#60a5fa', label: 'Canais de Aquisição',    pilar: 'p1', dir: 1,  speed: 1   },
-    { cx: 400, cy: 52, teeth: 8,  r1: 24, r2: 31, color: '#4ade80', label: 'Processo Comercial',    pilar: 'p2', dir: -1, speed: 1.5 },
-    { cx: 615, cy: 52, teeth: 12, r1: 36, r2: 46, color: '#facc15', label: 'Oferta e Ticket Médio', pilar: 'p3', dir: 1,  speed: 1   },
-  ];
-
-  var gearGroups = [];
-  var gearPaths  = [];
-
-  gearDefs.forEach(function(g, i) {
-    var grp = document.createElementNS(NS, 'g');
-    grp.id = 'grp-gear-' + i;
-
-    var path = document.createElementNS(NS, 'path');
-    path.setAttribute('d', gearPath(g.cx, g.cy, g.teeth, g.r1, g.r2));
-    path.setAttribute('fill', 'rgba(13,20,40,0.95)');
-    path.setAttribute('stroke', g.color);
-    path.setAttribute('stroke-width', '1.5');
-    path.setAttribute('opacity', '0.55');
-    path.id = 'gear-path-' + i;
-
-    var hub = document.createElementNS(NS, 'circle');
-    hub.setAttribute('cx', g.cx); hub.setAttribute('cy', g.cy);
-    hub.setAttribute('r', g.r1 * 0.38);
-    hub.setAttribute('fill', g.color); hub.setAttribute('opacity', '0.12');
-    hub.setAttribute('stroke', g.color); hub.setAttribute('stroke-width', '1');
-
-    var dot = document.createElementNS(NS, 'circle');
-    dot.setAttribute('cx', g.cx); dot.setAttribute('cy', g.cy);
-    dot.setAttribute('r', '4');
-    dot.setAttribute('fill', g.color); dot.setAttribute('opacity', '0.6');
-
-    grp.appendChild(path);
-    grp.appendChild(hub);
-    grp.appendChild(dot);
-    svg.appendChild(grp);
-
-    var txt = document.createElementNS(NS, 'text');
-    txt.setAttribute('x', g.cx);
-    txt.setAttribute('y', g.cy + g.r2 + 18);
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('fill', g.color);
-    txt.setAttribute('opacity', '0.5');
-    txt.setAttribute('font-size', '10');
-    txt.setAttribute('font-weight', '600');
-    txt.setAttribute('font-family', 'Inter, sans-serif');
-    txt.setAttribute('letter-spacing', '0.06em');
-    txt.textContent = g.label.toUpperCase();
-    txt.id = 'gear-lbl-' + i;
-    svg.appendChild(txt);
-
-    gearGroups.push(grp);
-    gearPaths.push(path);
-  });
-
-  // Glow cycle (wander between gears)
-  var active = 0;
-  function activateGear(idx) {
-    gearDefs.forEach(function(g, i) {
-      var path  = document.getElementById('gear-path-' + i);
-      var lbl   = document.getElementById('gear-lbl-' + i);
-      var card  = document.querySelector('.pilar-card.' + g.pilar);
-      var gColors = { p1:'rgba(96,165,250,0.3)', p2:'rgba(74,222,128,0.3)', p3:'rgba(250,204,21,0.3)' };
-      if (i === idx) {
-        path.setAttribute('opacity', '1');
-        path.setAttribute('stroke-width', '2');
-        if (lbl) lbl.setAttribute('opacity', '1');
-        if (card) card.style.boxShadow = '0 0 0 2px ' + gColors[g.pilar] + ', 0 0 20px ' + gColors[g.pilar];
-      } else {
-        path.setAttribute('opacity', '0.35');
-        path.setAttribute('stroke-width', '1.5');
-        if (lbl) lbl.setAttribute('opacity', '0.4');
-        if (card) { card.style.boxShadow = ''; }
-      }
-    });
-  }
-  activateGear(0);
-  setInterval(function() { active = (active + 1) % 3; activateGear(active); }, 2400);
-
-  // Rotate
-  var angle = 0;
-  function animate() {
-    angle += 0.25;
-    gearDefs.forEach(function(g, i) {
-      var grp = document.getElementById('grp-gear-' + i);
-      if (grp) grp.setAttribute('transform', 'rotate(' + (g.dir * g.speed * angle) + ',' + g.cx + ',' + g.cy + ')');
-    });
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
-
-// ── STAGE FIT (evita distorção de cards/fotos ao dar zoom) ──
-// Mantém o layout interno em tamanho fixo (1280x664) e apenas
-// escala visualmente o quadro inteiro via transform, de forma
-// uniforme. Isso evita o recálculo de layout (e a distorção de
-// imagens/cards) que ocorria ao combinar zoom nativo do navegador
-// com zoom CSS fixo.
+// ── STAGE FIT (respeita zoom do navegador e qualquer resolução) ──
 (function() {
   var STAGE_W = 1280, STAGE_H = 664;
+
   function fitStage() {
     var stage = document.querySelector('.stage');
     var frame = document.getElementById('stageFrame');
     if (!stage || !frame) return;
-    // Ocupa no máximo 80% do espaço disponível — deixa a apresentação
-    // com margem visual confortável em qualquer resolução de tela
+
+    // visualViewport devolve as dimensões já corrigidas pelo zoom do navegador
+    var vvw = window.visualViewport ? window.visualViewport.width  : window.innerWidth;
+    var vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    var navH = document.querySelector('.pres-nav')
+             ? document.querySelector('.pres-nav').offsetHeight : 56;
+
+    var availW = vvw;
+    var availH = vvh - navH;
+
     var scale = Math.min(
-      (stage.clientWidth  * 0.936) / STAGE_W,
-      (stage.clientHeight * 0.936) / STAGE_H
+      (availW * 0.936) / STAGE_W,
+      (availH * 0.936) / STAGE_H
     );
+
     frame.style.transform = 'scale(' + scale + ')';
   }
+
   window.addEventListener('resize', fitStage);
   window.addEventListener('orientationchange', fitStage);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', fitStage);
+    window.visualViewport.addEventListener('scroll', fitStage);
+  }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', fitStage);
   } else {
@@ -1507,61 +1443,61 @@ function computeResult() {
 })();
 
 // ── SLIDE NAVIGATION ──
-const TOTAL = 5;
-let current = 1;
+// Slides visíveis — reconstruído ao iniciar a apresentação
+var visibleSlides = [1, 2, 3, 4, 5]; // padrão: todos
+var currentIdx = 0; // índice dentro de visibleSlides
 
-const stepsEl = document.getElementById('nav-steps');
-stepsEl.innerHTML = Array.from({length: TOTAL}, (_, i) =>
-  `<div class="nav-step ${i === 0 ? 'active' : ''}" onclick="goTo(${i+1})">${i+1}</div>`
-).join('');
+function buildNav() {
+  // Esconder todos os slides
+  document.querySelectorAll('.slide').forEach(function(s) {
+    s.style.display = 'none';
+    s.classList.remove('active', 'out');
+  });
+  // Mostrar apenas os ativos
+  visibleSlides.forEach(function(id) {
+    var el = document.getElementById('slide-' + id);
+    if (el) el.style.display = '';
+  });
+  // Reconstruir os botões de navegação
+  var stepsEl = document.getElementById('nav-steps');
+  stepsEl.innerHTML = visibleSlides.map(function(id, i) {
+    return '<div class="nav-step' + (i === 0 ? ' active' : '') + '" onclick="goToIdx(' + i + ')">' + id + '</div>';
+  }).join('');
+  currentIdx = 0;
+  var firstEl = document.getElementById('slide-' + visibleSlides[0]);
+  if (firstEl) firstEl.classList.add('active');
+}
 
-function goTo(n) {
-  const prev = document.getElementById('slide-' + current);
-  prev.classList.remove('active');
-  prev.classList.add('out');
-  setTimeout(() => prev.classList.remove('out'), 300);
-  current = n;
-  document.getElementById('slide-' + current).classList.add('active');
-  document.querySelectorAll('.nav-step').forEach((el, i) => {
+function goToIdx(idx) {
+  if (idx < 0 || idx >= visibleSlides.length) return;
+  var prevEl = document.getElementById('slide-' + visibleSlides[currentIdx]);
+  if (prevEl) { prevEl.classList.remove('active'); prevEl.classList.add('out'); setTimeout(function(){ prevEl.classList.remove('out'); }, 300); }
+  currentIdx = idx;
+  var nextEl = document.getElementById('slide-' + visibleSlides[currentIdx]);
+  if (nextEl) nextEl.classList.add('active');
+  document.querySelectorAll('.nav-step').forEach(function(el, i) {
     el.classList.remove('active', 'done');
-    if      (i + 1 === current) el.classList.add('active');
-    else if (i + 1 <  current)  el.classList.add('done');
+    if      (i === currentIdx) el.classList.add('active');
+    else if (i <  currentIdx) el.classList.add('done');
   });
 }
-function nextSlide() { if (current < TOTAL) goTo(current + 1); }
-function prevSlide() { if (current > 1)     goTo(current - 1); }
-document.addEventListener('keydown', e => {
+
+// goTo por ID de slide (compatibilidade com PDF export e outros)
+function goTo(slideId) {
+  var idx = visibleSlides.indexOf(slideId);
+  if (idx !== -1) goToIdx(idx);
+}
+
+function nextSlide() { if (currentIdx < visibleSlides.length - 1) goToIdx(currentIdx + 1); }
+function prevSlide() { if (currentIdx > 0) goToIdx(currentIdx - 1); }
+
+document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextSlide();
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevSlide();
 });
 
-// ── UTILS ──
-function fmt(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
-
-// ── SLIDE 5 — EQUAÇÃO INTERATIVA ──
-function calcEquacao() {
-  const opor    = parseFloat(document.getElementById('eq-opor').value)   || 0;
-  const convPct = parseFloat(document.getElementById('eq-conv').value)    || 0;
-  const ticket  = parseFloat(document.getElementById('eq-ticket').value)  || 0;
-  const conv    = convPct / 100;
-  const vendas  = opor * conv;
-  const fat     = vendas * ticket;
-  const fatUp15c = opor * 1.15 * conv * ticket;
-  const fatUp15v = opor * (conv * 1.15) * ticket;
-  const fatUp32  = opor * 1.15 * (conv * 1.15) * ticket;
-
-  document.getElementById('eq-d-opor').textContent   = opor.toLocaleString('pt-BR');
-  document.getElementById('eq-d-conv').textContent   = convPct + '%';
-  document.getElementById('eq-d-vendas').textContent = Math.round(vendas).toLocaleString('pt-BR');
-  document.getElementById('eq-d-ticket').textContent = 'R$' + ticket.toLocaleString('pt-BR');
-  document.getElementById('eq-d-fat').textContent    = fmt(fat);
-  document.getElementById('eq-d-fat-ano').textContent= fmt(fat * 12) + ' / ano';
-  document.getElementById('eq-d-upcanal').textContent= fmt(fatUp15c);
-  document.getElementById('eq-d-upconv').textContent = fmt(fatUp15v);
-  document.getElementById('eq-d-up30').textContent   = fmt(fatUp32);
-
-}
-calcEquacao();
+// Inicializar com todos os slides visíveis
+buildNav();
 
 // ── PDF EXPORT ──
 async function downloadPDF() {
@@ -1574,21 +1510,22 @@ async function downloadPDF() {
   const nav   = document.querySelector('.pres-nav');
   const stage = document.querySelector('.stage');
   const frame = document.getElementById('stageFrame');
-  const saved = current;
+  const saved = currentIdx;
   const savedTransform = frame.style.transform;
   nav.style.display = 'none';
   stage.style.position = 'fixed';
   stage.style.top = '0';
   stage.style.bottom = '0';
   frame.style.transform = 'none';
-  for (let i = 1; i <= TOTAL; i++) {
+  for (let i = 0; i < visibleSlides.length; i++) {
+    const slideId = visibleSlides[i];
     document.querySelectorAll('.slide').forEach(s => {
       s.style.transition = 'none';
       s.classList.remove('active','out');
     });
-    document.getElementById('slide-' + i).classList.add('active');
+    document.getElementById('slide-' + slideId).classList.add('active');
     await new Promise(r => setTimeout(r, 180));
-    const canvas = await html2canvas(document.getElementById('slide-' + i), {
+    const canvas = await html2canvas(document.getElementById('slide-' + slideId), {
       scale: 2, useCORS: true, backgroundColor: '#070c1a', logging: false,
       width: FRAME_W, height: FRAME_H,
       windowWidth: FRAME_W, windowHeight: FRAME_H,
@@ -1596,7 +1533,7 @@ async function downloadPDF() {
     const imgData = canvas.toDataURL('image/jpeg', 0.93);
     const iw = canvas.width/2, ih = canvas.height/2;
     const ratio = Math.min(W/iw, H/ih);
-    if (i > 1) pdf.addPage([W,H], 'landscape');
+    if (i > 0) pdf.addPage([W,H], 'landscape');
     pdf.addImage(imgData,'JPEG',(W-iw*ratio)/2,(H-ih*ratio)/2,iw*ratio,ih*ratio);
   }
   pdf.save('BP_Sessao_Estrategica_R1.pdf');
@@ -1609,7 +1546,7 @@ async function downloadPDF() {
     s.style.transition = '';
     s.classList.remove('active','out');
   });
-  goTo(saved);
+  goToIdx(saved);
   if (window.fitStage) window.fitStage();
   overlay.classList.remove('show');
 }
